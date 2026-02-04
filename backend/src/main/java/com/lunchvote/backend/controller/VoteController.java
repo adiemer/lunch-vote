@@ -16,15 +16,26 @@ public class VoteController {
         this.voteService = voteService;
     }
 
-    @PostMapping
-    public Vote saveVote(@RequestBody Vote vote) {
-        return voteService.saveVote(vote.getRestaurant(), vote.getComment(), vote.getUsername());
-    }
+   @PostMapping
+public Vote saveVote(@RequestBody Vote vote) {
+    // Log the incoming vote immediately
+    System.out.println("--- NEW VOTE INCOMING ---");
+    System.out.println("User: " + vote.getUsername() + " picked: " + vote.getRestaurant());
+    
+    return voteService.saveVote(vote);
+}
 
     @GetMapping
     public List<Vote> getAllVotes() {
-        List<Vote> votes = voteService.getAllVotes();
-        votes.forEach(v -> System.out.println("USERNAME = " + v.getUsername()));
-        return voteService.getAllVotes();
+    List<Vote> votes = voteService.getAllVotes();
+    
+    // This will only print if 'votes' is NOT empty
+    if (votes.isEmpty()) {
+        System.out.println("LOG: No votes found in database.");
+    } else {
+        votes.forEach(v -> System.out.println("USERNAME = " + v.getUsername() + " CHOSE " + v.getRestaurant()));
     }
+    
+    return votes; // Return the list we already have
+}
 }
