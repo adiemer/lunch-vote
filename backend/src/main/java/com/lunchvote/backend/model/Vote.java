@@ -13,9 +13,7 @@ public class Vote {
     private Long id;
 
     private String restaurant;
-
     private String comment;
-
     private String username;
 
     // Required by JPA
@@ -41,5 +39,18 @@ public class Vote {
 
     public String getUsername() {
         return username;
+    }
+
+    // Add these below your Getters
+    public void setRestaurant(String restaurant) {
+        this.restaurant = restaurant;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }
