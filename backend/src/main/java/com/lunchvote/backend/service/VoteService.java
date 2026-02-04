@@ -17,13 +17,22 @@ public class VoteService {
     }
 
     // Save a vote
-    public Vote saveVote(String restaurant, String comment, String username) {
-        Vote vote = new Vote(restaurant, comment, username);
-        if (voteRepository.existsByRestaurantAndUsername(restaurant, username)) {
-            throw new IllegalArgumentException("User has already voted for this restaurant");
-        }
-        return voteRepository.save(vote);  // <-- THIS is where you inject and call
+    public Vote saveVote(Vote vote) { 
+
+        boolean alreadyVoted = voteRepository.existsByUsername(vote.getUsername());
+
+    if (alreadyVoted) {
+        // If they exist, we 'Explode' (Throw Error)
+        throw new RuntimeException("User " + vote.getUsername() + " has already cast a vote!");
     }
+    
+    // VALIDATOR: We now reach inside 'vote' to get the names
+    if (voteRepository.existsByRestaurantAndUsername(vote.getRestaurant(), vote.getUsername())) {
+        throw new IllegalArgumentException("Already voted!");
+    }
+
+    return voteRepository.save(vote); 
+}
 
     // Get all votes
     public List<Vote> getAllVotes() {
