@@ -4,8 +4,9 @@ import java.time.LocalDate;
 
 public record ScheduleDTO(
     Long id,
-    LocalDate lunchDate,
+    String lunchDate,
     Long restaurantId,
     String restaurantName,
-    String restaurantAddress
+    String restaurantAddress,
+    String label
 ) {}

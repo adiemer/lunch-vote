@@ -4,6 +4,9 @@ import com.lunchvote.backend.dto.RestaurantDTO;
 import com.lunchvote.backend.dto.RestaurantRequest;
 import com.lunchvote.backend.model.Restaurant;
 import com.lunchvote.backend.repository.RestaurantRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,17 +43,6 @@ public class RestaurantService {
         return mapToDTO(savedRestaurant);
     }
 
-    /**
-     * Fetches all restaurants and converts them to DTOs for the frontend.
-     */
-    @Transactional(readOnly = true)
-    public List<RestaurantDTO> getAllRestaurants() {
-        return restaurantRepository.findAll()
-                .stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-    }
-
     // Helper method: This is our "Mapping" logic to keep code clean (DRY)
     private RestaurantDTO mapToDTO(Restaurant restaurant) {
         return new RestaurantDTO(
@@ -60,4 +52,36 @@ public class RestaurantService {
                 restaurant.getLabel()
         );
     }
+
+    @Transactional
+    public void deleteRestaurant(Long id) {
+        Restaurant restaurant = restaurantRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Restaurant not found"));
+        
+        // Instead of repository.delete(), we just flip the switch
+        restaurant.setActive(false);
+        restaurantRepository.save(restaurant);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RestaurantDTO> getAllRestaurants() {
+        // Only show active restaurants to the frontend
+        return restaurantRepository.findAllByActiveTrue()
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+   @Transactional
+public RestaurantDTO updateRestaurant(Long id, RestaurantRequest request) {
+    Restaurant restaurant = restaurantRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+
+    // Records use method-style accessors (no "get" prefix)
+    restaurant.setName(request.name());
+    restaurant.setAddress(request.address());
+    restaurant.setLabel(request.label());
+    
+    return mapToDTO(restaurantRepository.save(restaurant));
+}
 }

@@ -10,6 +10,9 @@ import lombok.*;
 @Builder
 public class Restaurant {
 
+    @Builder.Default
+    private boolean active = true;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -17,9 +20,9 @@ public class Restaurant {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(name = "restaurant_address",nullable = true)
     private String address;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String label;
 }

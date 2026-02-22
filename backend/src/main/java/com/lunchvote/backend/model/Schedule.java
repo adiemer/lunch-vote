@@ -17,6 +17,9 @@ public class Schedule {
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
 
+    @Column(nullable = true)
+    private String label;
+
     // Standard Default Constructor (Required by JPA)
     public Schedule() {}
 
@@ -29,4 +32,11 @@ public class Schedule {
 
     public Restaurant getRestaurant() { return restaurant; }
     public void setRestaurant(Restaurant restaurant) { this.restaurant = restaurant; }
+
+    public String getLabel() {
+        return label;
+    }
+    public void setLabel(String label) {
+        this.label = label;
+    }
 }
