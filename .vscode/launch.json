@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot-LunchDash",
+      "request": "launch",
+      "mainClass": "com.lunchvote.backend.BackendApplication",
+      "projectName": "backend",
+      "envFile": "${workspaceFolder}/backend/.env"
+    }
+  ]
+}
