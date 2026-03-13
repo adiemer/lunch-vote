@@ -8,7 +8,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "setup": "node -e \"const fs = require('fs'); if (!fs.existsSync('.env')) { fs.copyFileSync('.env.template', '.env'); console.log('.env created from template'); }\""
+    "setup:db": "psql -U postgres -c \"CREATE DATABASE lunch_vote_db;\" || echo \"Exists\"",
+    "setup:env": "node -e \"const fs = require('fs'); if (!fs.existsSync('.env')) { fs.copyFileSync('.env.template', '.env'); console.log('.env created'); }\"",
+    "setup": "npm run setup:db && npm run setup:env"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
