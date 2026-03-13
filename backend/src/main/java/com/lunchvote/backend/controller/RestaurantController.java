@@ -18,7 +18,7 @@ import com.lunchvote.backend.dto.RestaurantRequest;
 import com.lunchvote.backend.service.RestaurantService;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "${app.frontend.url}")
 @RequestMapping("/api/restaurants")
 public class RestaurantController {
 

@@ -31,3 +31,15 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Environment Variables
+.env
+
+target/
+*.class
+.shared
+.mvn/
+application-local.properties
+# If using IntelliJ/Eclipse
+.idea/
+.settings/

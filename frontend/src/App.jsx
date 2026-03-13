@@ -1,184 +1,67 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
+import {
+  createTheme,
+  ThemeProvider,
+  CssBaseline,
+  Container,
+  Box,
+  Typography,
+  Button,
+  TextField,
+  Grid,
+  Card,
+  CardContent,
+  IconButton,
+  AppBar,
+  Toolbar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  Paper,
+} from "@mui/material";
+import {
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  CalendarMonth as CalendarIcon,
+  Add as AddIcon,
+  Logout as LogoutIcon,
+  Restaurant as FoodIcon,
+} from "@mui/icons-material";
+import LoginForm from "./components/LoginForm";
 
-const styles = {
-  container: {
-    backgroundColor: "#1a1a1b",
-    minHeight: "100vh",
-    width: "100%",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    padding: "20px 10px",
-    boxSizing: "border-box",
+// 1. CONFIGURE THE DARK THEME
+const darkTheme = createTheme({
+  palette: {
+    mode: "dark",
+    primary: {
+      main: "#4db8ff", // Electric blue
+    },
+    secondary: {
+      main: "#ffcc00", // Gold for labels
+    },
+    background: {
+      default: "#121212", // Deep black/gray
+      paper: "#1e1e1e", // Card/Dialog background
+    },
+    success: {
+      main: "#2ecc71",
+    },
   },
-  card: {
-    backgroundColor: "#272729",
-    padding: "clamp(15px, 5vw, 30px)",
-    borderRadius: "20px",
-    boxShadow: "0 10px 40px rgba(0,0,0,0.6)",
-    width: "100%",
-    maxWidth: "1000px",
-    display: "flex",
-    flexDirection: "column",
-    boxSizing: "border-box",
-    position: "relative",
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    h3: { fontWeight: 800 },
+    h4: { fontWeight: 700 },
   },
-  title: { textAlign: "center", marginBottom: "30px", color: "white" },
-  headerSection: {
-    backgroundColor: "#333335",
-    padding: "20px",
-    borderRadius: "15px",
-    marginBottom: "25px",
-    textAlign: "center",
-    border: "1px solid #444",
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-    gap: "15px",
-    width: "100%",
-    marginTop: "20px",
-  },
-  restaurantCard: {
-    backgroundColor: "#333335",
-    padding: "15px",
-    borderRadius: "12px",
-    cursor: "pointer",
-    position: "relative",
-    border: "2px solid transparent",
-    minHeight: "110px",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    wordBreak: "break-word",
-  },
-  circleButton: {
-    width: "28px",
-    height: "28px",
-    borderRadius: "50%",
-    border: "none",
-    backgroundColor: "#444",
-    color: "white",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "14px",
-    padding: 0,
-  },
-  editBtn: {
-    backgroundColor: "rgba(77, 184, 255, 0.2)",
-    color: "#4db8ff",
-    border: "1px solid #4db8ff",
-    borderRadius: "50%",
-    width: "28px",
-    height: "28px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "12px",
-    cursor: "pointer",
-    padding: "0",
-  },
-  deleteBtn: {
-    backgroundColor: "rgba(255, 77, 77, 0.1)",
-    color: "#ff4d4d",
-    border: "1px solid rgba(255, 77, 77, 0.3)",
-    borderRadius: "50%",
-    width: "28px",
-    height: "28px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "10px",
-    cursor: "pointer",
-  },
-  addButton: {
-    backgroundColor: "#28a745",
-    color: "white",
-    padding: "10px 20px",
-    borderRadius: "8px",
-    border: "none",
-    cursor: "pointer",
-    fontWeight: "bold",
-  },
-  confirmButton: {
-    width: "100%",
-    padding: "15px",
-    borderRadius: "8px",
-    border: "none",
-    backgroundColor: "#007bff",
-    color: "white",
-    fontWeight: "bold",
-    cursor: "pointer",
-    marginTop: "20px",
-  },
-  modalOverlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.85)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-  },
-  modalContent: {
-    backgroundColor: "#272729",
-    padding: "25px",
-    borderRadius: "15px",
-    width: "90%",
-    maxWidth: "350px",
-    color: "white",
-  },
-  input: {
-    width: "100%",
-    padding: "10px",
-    marginBottom: "10px",
-    borderRadius: "5px",
-    border: "1px solid #444",
-    backgroundColor: "#1a1a1b",
-    color: "white",
-    boxSizing: "border-box",
-  },
-  successMessage: {
-    backgroundColor: "#28a745",
-    color: "white",
-    padding: "12px",
-    borderRadius: "8px",
-    marginBottom: "15px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    fontSize: "14px",
-    fontWeight: "bold",
-  },
-  closeToast: {
-    background: "none",
-    border: "none",
-    color: "white",
-    cursor: "pointer",
-    fontSize: "16px",
-    padding: "0 5px",
-  },
-  adminControls: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexWrap: "wrap",
-    gap: "15px",
-    marginBottom: "20px",
-    color: "white",
-  },
-};
+});
 
 function App() {
   const [restaurants, setRestaurants] = useState([]);
   const [todayChoice, setTodayChoice] = useState(null);
-  //const [selectedId, setSelectedId] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -188,10 +71,11 @@ function App() {
   const [restaurantToSchedule, setRestaurantToSchedule] = useState(null);
   const [newRestaurant, setNewRestaurant] = useState({ name: "", address: "", label: "" });
   const [myLabel, setMyLabel] = useState("");
-  const [successDetails, setSuccessDetails] = useState({
-    show: false,
-    message: "",
-    type: "success", // default type
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [notification, setNotification] = useState({ show: false, message: "", type: "success" });
+
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem("isLoggedIn") === "true";
   });
 
   const todayStr = new Intl.DateTimeFormat("en-CA").format(new Date());
@@ -203,375 +87,349 @@ function App() {
     return `${month}-${day}-${year}`;
   };
 
+  const displayToday = formatDisplayDate(todayStr);
+
+  const API_BASE = import.meta.env.VITE_API_URL;
+
+  if (!API_BASE) {
+    console.error("Missing VITE_API_URL! Make sure your .env file is set up.");
+  }
+
+  // --- API LOGIC ---
   const fetchRestaurants = () => {
     axios
-      .get("http://localhost:8080/api/restaurants")
+      .get(`${API_BASE}/api/restaurants`)
       .then((res) => setRestaurants(res.data))
-      .catch((err) => console.error("Error fetching restaurants", err));
+      .catch(() => console.error("Fetch failed"));
   };
 
   const fetchTargetChoice = (date) => {
     axios
-      .get(`http://localhost:8080/api/schedule?date=${date}`)
+      .get(`${API_BASE}/api/schedule?date=${date}`)
       .then((res) => setTodayChoice(res.data))
       .catch(() => setTodayChoice(null));
   };
 
   useEffect(() => {
-    fetchRestaurants();
-    fetchTargetChoice(viewingDate);
-  }, [viewingDate]);
+    if (isLoggedIn) {
+      fetchRestaurants();
+      fetchTargetChoice(viewingDate);
+    }
+  }, [viewingDate, isLoggedIn]);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    setIsLoggedIn(false);
+  };
+
+  const handleSaveRestaurant = () => {
+    const url = editingId ? `${API_BASE}/api/restaurants/${editingId}` : `${API_BASE}/api/restaurants`;
+    const method = editingId ? "put" : "post";
+    axios[method](url, newRestaurant)
+      .then(() => {
+        setIsModalOpen(false);
+        fetchRestaurants();
+
+        // If we just edited the restaurant that is currently the "Today Choice"
+        // we should update the myLabel textfield to match the new name/label
+        if (todayChoice && todayChoice.restaurantId === editingId) {
+          setMyLabel(newRestaurant.label || "");
+        }
+
+        setNotification({ show: true, message: "Saved!", type: "success" });
+      })
+      .catch(() => setNotification({ show: true, message: "Error", type: "error" }));
+  };
+
   const handleSaveDraft = () => {
     if (!restaurantToSchedule || !selectedDate) return;
-
-    const payload = {
-      restaurantId: restaurantToSchedule.id,
-      lunchDate: selectedDate,
-    };
-
     axios
-      .post("http://localhost:8080/api/schedule/draft", payload)
+      .post(`${API_BASE}/api/schedule/draft`, {
+        restaurantId: restaurantToSchedule.id,
+        lunchDate: selectedDate,
+        label: myLabel || restaurantToSchedule.label || "",
+      })
       .then((res) => {
         setTodayChoice(res.data);
-
         setViewingDate(selectedDate);
-        setIsScheduleModalOpen(false); // Fixes the 'setModal' is broken error
+        setIsScheduleModalOpen(false);
       })
-      .catch((err) => console.error("Draft failed:", err));
-  };
-
-  // --- 2. THE MAIN PAGE "CONFIRM" (Saves to DB + Sends Text) ---
-  const handleFinalConfirm = () => {
-    // Use todayChoice.restaurantId because the draft is already saved in DB
-    if (!todayChoice) {
-      setSuccessDetails({
-        show: true,
-        message: "Whoops! Please select a restaurant before confirming.",
-        type: "warning",
-      });
-      setTimeout(() => setSuccessDetails({ show: false, message: "", type: "success" }), 4000);
-      return;
-    }
-
-    const payload = {
-      restaurantId: todayChoice.restaurantId,
-      lunchDate: viewingDate,
-      // FIX: If there is a label in todayChoice, use it.
-      // Otherwise, fallback to the current input box.
-      label: todayChoice.label || myLabel,
-    };
-
-    axios
-      .post("http://localhost:8080/api/schedule/confirm", payload)
-      .then(() => {
-        setSuccessDetails({ show: true, message: "Announcement sent to the team!" });
-        // OPTIONAL: Clear the label input after a successful broadcast
-        setMyLabel("");
-        setTimeout(() => setSuccessDetails({ show: false, message: "" }), 5000);
-      })
-      .catch((err) => {
-        console.error("Broadcast failed", err);
-        setSuccessDetails({
-          show: true,
-          message: "Server error: Could not send announcement.",
-          type: "error",
-        });
-      });
-  };
-
-  const handleEditClick = (e, restaurant) => {
-    e.stopPropagation();
-    setEditingId(restaurant.id);
-    setNewRestaurant({ name: restaurant.name, address: restaurant.address, label: restaurant.label });
-    setIsModalOpen(true);
-  };
-
-  const handleSelect = async (restaurantId) => {
-    // 1. Find the restaurant object from your list to get its specific label
-    const selectedRest = restaurants.find((r) => r.id === restaurantId);
-
-    // 2. Decide which label to send:
-    // Prioritize the custom input (myLabel), otherwise use the Restaurant's own label.
-    const finalLabel = myLabel || selectedRest?.label || "";
-
-    const response = await fetch("http://localhost:8080/api/schedule/draft", {
-      method: "POST",
-      body: JSON.stringify({
-        restaurantId,
-        lunchDate: viewingDate,
-        label: finalLabel, // Now it sends the attribute you see on the card!
-      }),
-      headers: { "Content-Type": "application/json" },
-    });
-
-    if (response.ok) {
-      const updatedSchedule = await response.json();
-      setTodayChoice(updatedSchedule);
-    }
-  };
-
-  const promptDelete = (e, restaurant) => {
-    e.stopPropagation();
-    setRestaurantToDelete(restaurant);
-    setIsDeleteModalOpen(true);
+      .catch(() => setNotification({ show: true, message: "Draft failed", type: "error" }));
   };
 
   const confirmDelete = () => {
-    axios
-      .delete(`http://localhost:8080/api/restaurants/${restaurantToDelete.id}`)
-      .then(() => {
-        setIsDeleteModalOpen(false);
-        if (todayChoice && todayChoice.restaurantId === restaurantToDelete.id) setTodayChoice(null);
-        fetchRestaurants();
-      })
-      .catch((err) => console.error("Delete failed", err));
+    axios.delete(`${API_BASE}/api/restaurants/${restaurantToDelete.id}`).then(() => {
+      setIsDeleteModalOpen(false);
+      fetchRestaurants();
+    });
   };
 
+  const handleFinalConfirm = async () => {
+    setIsProcessing(true);
+    try {
+      await axios.post(`${API_BASE}/api/schedule/confirm`, {
+        restaurantId: todayChoice.restaurantId,
+        lunchDate: viewingDate,
+        label: myLabel || todayChoice.label || "",
+      });
+      setNotification({ show: true, message: "🚀 Team Notified!", type: "success" });
+    } catch {
+      setNotification({ show: true, message: "Broadcast failed", type: "error" });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleSelect = async (restaurantId) => {
+    const selectedRest = restaurants.find((r) => r.id === restaurantId);
+
+    // LOGIC: If we already have text in the custom box, use it.
+    // Otherwise, use the restaurant's default label.
+    const currentLabelValue = myLabel.trim() !== "" ? myLabel : selectedRest?.label || "";
+
+    try {
+      const res = await axios.post(`${API_BASE}/api/schedule/draft`, {
+        restaurantId,
+        lunchDate: viewingDate,
+        label: currentLabelValue, // Send the current live label
+      });
+
+      setTodayChoice(res.data);
+      // Keep the textfield in sync with what the DB just confirmed
+      setMyLabel(res.data.label || "");
+    } catch (err) {
+      console.error("Selection failed", err);
+    }
+  };
+
+  // --- RENDER ---
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>🍴 Lunch Dash</h1>
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      {!isLoggedIn ? (
+        <LoginForm onLoginSuccess={() => setIsLoggedIn(true)} />
+      ) : (
+        <Box sx={{ minHeight: "100vh" }}>
+          <AppBar position="sticky" elevation={0} sx={{ borderBottom: "1px solid #333" }}>
+            <Toolbar>
+              <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 900 }}>
+                LUNCH DASH
+              </Typography>
 
-        {/* DYNAMIC HEADER */}
-        <div style={styles.headerSection}>
-          <small style={{ color: "#aaa", textTransform: "uppercase", letterSpacing: "1px" }}>
-            {viewingDate === todayStr ? "Today's Selection" : `Plan for ${formatDisplayDate(viewingDate)}`}
-          </small>
-          {todayChoice ? (
-            <div>
-              <h2 style={{ color: "#4db8ff", margin: "10px 0" }}>{todayChoice.restaurantName}</h2>
-              <p style={{ fontSize: "14px", color: "#ccc", margin: 0 }}>{todayChoice.restaurantAddress}</p>
-              {/* ADD THIS LINE BELOW TO TEST */}
-              {todayChoice.label && (
-                <p style={{ fontSize: "13px", color: "#ffcc00", fontWeight: "bold", marginTop: "5px" }}>
-                  🏷️ Label: {todayChoice.label}
-                </p>
+              {/* Add the date to the AppBar */}
+              <Typography variant="body2" sx={{ mr: 2, opacity: 0.7 }}>
+                {displayToday}
+              </Typography>
+
+              <Button color="inherit" onClick={handleLogout} startIcon={<LogoutIcon />}>
+                Logout
+              </Button>
+            </Toolbar>
+          </AppBar>
+
+          <Container maxWidth="lg" sx={{ mt: 4, pb: 8 }}>
+            {/* ANNOUNCEMENT HEADER */}
+            <Paper variant="outlined" sx={{ p: 4, textAlign: "center", borderRadius: 4, mb: 4, borderColor: "#333" }}>
+              <Typography color="primary" variant="overline" sx={{ letterSpacing: 2, fontWeight: "bold" }}>
+                {viewingDate === todayStr
+                  ? `TODAY (${formatDisplayDate(viewingDate)})`
+                  : `PLAN FOR ${formatDisplayDate(viewingDate)}`}
+              </Typography>
+
+              {todayChoice ? (
+                <Box sx={{ my: 2 }}>
+                  <Typography variant="h3">{todayChoice.restaurantName}</Typography>
+                  <Typography variant="h6" color="text.secondary">
+                    {todayChoice.restaurantAddress}
+                  </Typography>
+                  <Typography variant="h5" color="secondary" sx={{ mt: 2, fontWeight: "bold" }}>
+                    🏷️{" "}
+                    {myLabel.trim() !== ""
+                      ? myLabel
+                      : todayChoice?.label || todayChoice?.restaurantLabel || "Regular Lunch"}
+                  </Typography>
+                </Box>
+              ) : (
+                <Typography variant="h5" sx={{ my: 3, opacity: 0.5 }}>
+                  No plans yet.
+                </Typography>
               )}
-            </div>
-          ) : (
-            <p style={{ color: "#888", fontStyle: "italic", marginTop: "10px" }}>No plans yet for {viewingDate}</p>
-          )}
-          {viewingDate !== todayStr && (
-            <button
-              onClick={() => setViewingDate(todayStr)}
-              style={{
-                background: "none",
-                border: "none",
-                color: "#4db8ff",
-                cursor: "pointer",
-                fontSize: "12px",
-                marginTop: "10px",
-                textDecoration: "underline",
-              }}
-            >
-              Return to Today
-            </button>
-          )}
-        </div>
 
-        {successDetails.show && (
-          <div
-            style={{
-              ...styles.notificationPopup,
-              backgroundColor:
-                successDetails.type === "warning" ? "#ffcc00" : successDetails.type === "error" ? "#ff4444" : "#28a745",
-              color: successDetails.type === "warning" ? "#000" : "#fff",
-              padding: "15px 25px",
-              borderRadius: "8px",
-              position: "fixed",
-              bottom: "20px",
-              right: "20px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-              zIndex: 1000,
-              transition: "all 0.3s ease",
-            }}
-          >
-            {successDetails.type === "warning" ? "⚠️ " : "✅ "}
-            {successDetails.message}
-          </div>
-        )}
-
-        <div style={{ width: "100%", marginBottom: "15px" }}>
-          <input
-            style={styles.input}
-            placeholder="Add a label for this lunch (e.g. Birthday Party, Kickoff)..."
-            value={myLabel}
-            onChange={(e) => setMyLabel(e.target.value)}
-          />
-        </div>
-        <div style={styles.adminControls}>
-          <h3 style={{ margin: 0 }}>Available Spots</h3>
-          <button style={styles.addButton} onClick={() => setIsModalOpen(true)}>
-            + Add Restaurant
-          </button>
-        </div>
-
-        <div style={styles.grid}>
-          {restaurants.map((r) => (
-            <div
-              key={r.id}
-              onClick={() => handleSelect(r.id)}
-              style={{
-                ...styles.restaurantCard,
-                borderColor: todayChoice?.restaurantId === r.id ? "#4db8ff" : "transparent",
-                backgroundColor: todayChoice?.restaurantId === r.id ? "#3d3d40" : "#333335",
-              }}
-            >
-              {/* TOP RIGHT BUTTONS */}
-              <div
-                style={{ position: "absolute", top: "10px", right: "10px", display: "flex", gap: "6px", zIndex: 10 }}
-              >
-                <button
-                  style={styles.circleButton}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setRestaurantToSchedule(r);
-                    setIsScheduleModalOpen(true);
-                  }}
+              <Box sx={{ mt: 3, display: "flex", gap: 2, flexDirection: { xs: "column", sm: "row" } }}>
+                <TextField
+                  fullWidth
+                  variant="filled"
+                  label="Custom Label"
+                  value={myLabel}
+                  onChange={(e) => setMyLabel(e.target.value)}
+                />
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={handleFinalConfirm}
+                  disabled={!todayChoice || isProcessing}
+                  sx={{ minWidth: 260, fontWeight: "bold" }}
                 >
-                  📅
-                </button>
-                <button style={styles.editBtn} onClick={(e) => handleEditClick(e, r)}>
-                  ✎
-                </button>
-                <button style={styles.deleteBtn} onClick={(e) => promptDelete(e, r)}>
-                  ✕
-                </button>
-              </div>
+                  {isProcessing ? <CircularProgress size={24} /> : `🚀 SEND ANNOUNCEMENT ${viewingDate}`}
+                </Button>
+              </Box>
+            </Paper>
 
-              <h4 style={{ margin: "0 0 5px 0", paddingRight: "100px", color: "white" }}>{r.name}</h4>
-              <p style={{ fontSize: "12px", color: "#aaa", margin: 0 }}>{r.label}</p>
-              {r.lastScheduledDate && (
-                <p
-                  style={{
-                    fontSize: "11px",
-                    color: "#4db8ff",
-                    marginTop: "8px",
-                    borderTop: "1px solid #444",
-                    paddingTop: "4px",
-                  }}
-                >
-                  📅 Scheduled: {r.lastScheduledDate}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
+            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+              <Typography variant="h4">Spots</Typography>
+              <Button variant="outlined" startIcon={<AddIcon />} onClick={() => setIsModalOpen(true)}>
+                Add
+              </Button>
+            </Box>
 
-        <button
-          style={{
-            ...styles.confirmButton,
-            // Button is dimmed if nothing is selected for this date
-            opacity: !todayChoice?.restaurantId ? 0.5 : 1,
-          }}
-          onClick={handleFinalConfirm}
-          // Button is unclickable if nothing is selected
-          disabled={!todayChoice?.restaurantId}
-        >
-          Confirm for {viewingDate === todayStr ? "Today" : formatDisplayDate(viewingDate)}
-        </button>
-      </div>
+            <Grid container spacing={3}>
+              {restaurants.map((r) => (
+                <Grid item xs={12} sm={6} md={4} key={r.id}>
+                  <Card
+                    variant="outlined"
+                    onClick={() => handleSelect(r.id)}
+                    sx={{
+                      cursor: "pointer",
+                      borderRadius: 3,
+                      borderColor: todayChoice?.restaurantId === r.id ? "primary.main" : "#333",
+                      bgcolor: todayChoice?.restaurantId === r.id ? "rgba(77, 184, 255, 0.05)" : "background.paper",
+                    }}
+                  >
+                    <CardContent>
+                      <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRestaurantToSchedule(r);
+                            setIsScheduleModalOpen(true);
+                          }}
+                        >
+                          <CalendarIcon color="primary" fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingId(r.id);
 
-      {/* SCHEDULE MODAL */}
-      {isScheduleModalOpen && (
-        <div style={styles.modalOverlay}>
-          <div style={{ ...styles.modalContent, textAlign: "center", maxWidth: "400px" }}>
-            <h2 style={{ marginTop: 0 }}>
-              Schedule {restaurantToSchedule?.name} for {formatDisplayDate(selectedDate)}
-            </h2>
-            <input
-              type="date"
-              value={selectedDate}
-              min={todayStr}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              style={styles.input}
-            />
-            <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
-              <button onClick={handleSaveDraft} disabled={!selectedDate} style={{ ...styles.addButton, flex: 1 }}>
-                Lock it in
-              </button>
-              <button
-                onClick={() => setIsScheduleModalOpen(false)}
-                style={{ ...styles.addButton, backgroundColor: "#666", flex: 1 }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+                            // LOGIC: If I'm editing the highlighted card,
+                            // use my custom typed label. Otherwise, use the DB label.
+                            const labelToEdit =
+                              todayChoice?.restaurantId === r.id && myLabel.trim() !== "" ? myLabel : r.label || "";
 
-      {/* ADD/EDIT MODAL */}
-      {isModalOpen && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
-            <h2 style={{ marginTop: 0 }}>{editingId ? "Edit" : "New"} Restaurant</h2>
-            <input
-              style={styles.input}
-              placeholder="Name"
-              value={newRestaurant.name}
-              onChange={(e) => setNewRestaurant({ ...newRestaurant, name: e.target.value })}
-            />
-            <input
-              style={styles.input}
-              placeholder="Address"
-              value={newRestaurant.address}
-              onChange={(e) => setNewRestaurant({ ...newRestaurant, address: e.target.value })}
-            />
-            <input
-              style={styles.input}
-              placeholder="Category"
-              value={newRestaurant.label}
-              onChange={(e) => setNewRestaurant({ ...newRestaurant, label: e.target.value })}
-            />
-            <div style={{ display: "flex", gap: "10px" }}>
-              <button
-                onClick={() => {
-                  const action = editingId
-                    ? axios.put(`http://localhost:8080/api/restaurants/${editingId}`, newRestaurant)
-                    : axios.post("http://localhost:8080/api/restaurants", newRestaurant);
-                  action.then(() => {
-                    fetchRestaurants();
-                    setIsModalOpen(false);
-                    setEditingId(null);
-                    setNewRestaurant({ name: "", address: "", label: "" });
-                  });
-                }}
-                style={styles.addButton}
-              >
+                            setNewRestaurant({ ...r, label: labelToEdit });
+                            setIsModalOpen(true);
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRestaurantToDelete(r);
+                            setIsDeleteModalOpen(true);
+                          }}
+                        >
+                          <DeleteIcon color="error" fontSize="small" />
+                        </IconButton>
+                      </Box>
+                      <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                        {r.name}
+                      </Typography>
+                      <Typography variant="subtitle1" sx={{ mt: 2, color: "secondary.main", fontWeight: "bold" }}>
+                        {todayChoice?.restaurantId === r.id
+                          ? myLabel.trim() !== ""
+                            ? myLabel
+                            : todayChoice.label || r.label
+                          : r.label || "No label set"}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Container>
+
+          {/* MODALS */}
+          <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} fullWidth maxWidth="xs">
+            <DialogTitle>{editingId ? "Edit" : "New"} Spot</DialogTitle>
+            <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+              <TextField
+                label="Name"
+                fullWidth
+                value={newRestaurant.name}
+                onChange={(e) => setNewRestaurant({ ...newRestaurant, name: e.target.value })}
+              />
+              <TextField
+                label="Address"
+                fullWidth
+                value={newRestaurant.address}
+                onChange={(e) => setNewRestaurant({ ...newRestaurant, address: e.target.value })}
+              />
+              <TextField
+                label="Label"
+                fullWidth
+                value={newRestaurant.label || ""} // Ensures it never passes null to the input
+                onChange={(e) => setNewRestaurant({ ...newRestaurant, label: e.target.value })}
+                placeholder="e.g. 1792"
+                variant="outlined"
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setIsModalOpen(false)}>Cancel</Button>
+              <Button onClick={handleSaveRestaurant} variant="contained">
                 Save
-              </button>
-              <button onClick={() => setIsModalOpen(false)} style={{ ...styles.addButton, backgroundColor: "#666" }}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              </Button>
+            </DialogActions>
+          </Dialog>
 
-      {/* DELETE MODAL */}
-      {isDeleteModalOpen && (
-        <div style={styles.modalOverlay}>
-          <div style={{ ...styles.modalContent, textAlign: "center" }}>
-            <h2 style={{ color: "#ff4d4d" }}>Confirm Delete</h2>
-            <p>
-              Delete <strong>{restaurantToDelete?.name}</strong>?
-            </p>
-            <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
-              <button onClick={confirmDelete} style={{ ...styles.addButton, backgroundColor: "#ff4d4d", flex: 1 }}>
+          <Dialog open={isScheduleModalOpen} onClose={() => setIsScheduleModalOpen(false)}>
+            <DialogTitle>Schedule {restaurantToSchedule?.name}</DialogTitle>
+            <DialogContent>
+              <Typography variant="subtitle1" color="secondary" sx={{ mb: 2, fontWeight: "bold" }}>
+                Setting schedule for: {formatDisplayDate(selectedDate)}
+              </Typography>
+
+              <TextField
+                type="date"
+                fullWidth
+                slotProps={{ inputLabel: { shrink: true } }}
+                value={selectedDate} // Logical value (raw)
+                onChange={(e) => setSelectedDate(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setIsScheduleModalOpen(false)}>Cancel</Button>
+              <Button onClick={handleSaveDraft} variant="contained">
+                Schedule
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog open={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)}>
+            <DialogTitle>Delete {restaurantToDelete?.name}?</DialogTitle>
+            <DialogActions>
+              <Button onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
+              <Button onClick={confirmDelete} color="error">
                 Delete
-              </button>
-              <button
-                onClick={() => setIsDeleteModalOpen(false)}
-                style={{ ...styles.addButton, backgroundColor: "#666", flex: 1 }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Snackbar
+            open={notification.show}
+            autoHideDuration={3000}
+            onClose={() => setNotification({ ...notification, show: false })}
+          >
+            <Alert severity={notification.type} variant="filled">
+              {notification.message}
+            </Alert>
+          </Snackbar>
+        </Box>
       )}
-    </div>
+    </ThemeProvider>
   );
 }
 

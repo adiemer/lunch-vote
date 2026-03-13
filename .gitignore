@@ -23,3 +23,5 @@
 hs_err_pid*
 replay_pid*
 application.properties
+
+VITE_API_URL=http://localhost:8080

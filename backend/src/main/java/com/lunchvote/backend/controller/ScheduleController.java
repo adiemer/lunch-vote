@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "${app.frontend.url}")
 @RequestMapping("/api/schedule")
 public class ScheduleController {
 
@@ -71,22 +71,10 @@ public ResponseEntity<ScheduleDTO> saveDraft(@RequestBody ScheduleRequest reques
 
 // BLUE BUTTON: Saves the choice AND triggers the broadcast
 @PostMapping("/confirm")
-public ResponseEntity<ScheduleDTO> confirmSchedule(@RequestBody ScheduleRequest request) {
-    // request.restaurantId() and request.lunchDate() are now populated from the JSON
-    ScheduleDTO dto = scheduleService.scheduleLunch(request);
-
-    try {
-        notificationService.sendEmailBroadcast(
-            dto.restaurantName(), 
-            dto.restaurantAddress(),
-            dto.lunchDate(),
-            dto.label()
-        );
-    } catch (Exception e) {
-        System.err.println("Email Broadcast Failed: " + e.getMessage());
-    }
-
-    return ResponseEntity.ok(dto);
+public ResponseEntity<?> confirmSchedule(@RequestBody ScheduleRequest request) {
+    // request.getLabel() should now contain "Birthday Party" or whatever you typed
+    scheduleService.confirmAndNotify(request);
+    return ResponseEntity.ok().build();
 }
 
 @PostMapping

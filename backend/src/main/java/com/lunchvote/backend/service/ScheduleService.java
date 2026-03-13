@@ -23,12 +23,14 @@ public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
     private final RestaurantRepository restaurantRepository;
+    private final NotificationService notificationService;
 
    
 
-    public ScheduleService(ScheduleRepository scheduleRepository, RestaurantRepository restaurantRepository) {
+    public ScheduleService(ScheduleRepository scheduleRepository, RestaurantRepository restaurantRepository, NotificationService notificationService) {
         this.scheduleRepository = scheduleRepository;
         this.restaurantRepository = restaurantRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional(readOnly = true)
@@ -83,13 +85,18 @@ public ScheduleDTO getToday() {
 
     // Helper to transform Entity -> DTO
     private ScheduleDTO mapToDTO(Schedule schedule) {
+
+        String displayLabel = (schedule.getLabel() != null) 
+        ? schedule.getLabel() 
+        : schedule.getRestaurant().getLabel();
+
         return new ScheduleDTO(
             schedule.getId(),
             schedule.getLunchDate().toString(),
             schedule.getRestaurant().getId(),
             schedule.getRestaurant().getName(),
             schedule.getRestaurant().getAddress(),
-            schedule.getLabel()
+            displayLabel
         );
     }
 
@@ -115,5 +122,43 @@ public ScheduleDTO getToday() {
         Schedule saved = scheduleRepository.save(schedule);
         return mapToDTO(saved);
     }
+
+    // Inside ScheduleService.java
+@Transactional
+public void confirmAndNotify(ScheduleRequest request) {
+    var rest = restaurantRepository.findById(request.restaurantId())
+            .orElseThrow(() -> new RuntimeException("Restaurant not found"));
+
+    // FALLBACK LOGIC:
+    // 1. Check if a dynamic label was typed (from the Record)
+    // 2. If not, take the label from the Database (from the Entity)
+    // 3. If both are empty, default to an empty string
+    String finalLabel = "";
+
+    if (request.label() != null && !request.label().isBlank()) {
+        finalLabel = request.label();
+        rest.setLabel(finalLabel);
+        restaurantRepository.save(rest);
+        
+    } else if (rest.getLabel() != null && !rest.getLabel().isBlank()) {
+        finalLabel = rest.getLabel();
+    }
+
+    String finalSaveLabel = finalLabel;
+
+    scheduleRepository.findByLunchDate(request.lunchDate()).ifPresent(s -> {
+        s.setLabel(finalSaveLabel); // No more error!
+        scheduleRepository.save(s);
+    });
+
     
+
+    // Call the broadcaster with the correct order
+    notificationService.sendEmailBroadcast(
+        rest.getName(),
+        rest.getAddress(),
+        request.lunchDate().toString(),
+        finalSaveLabel
+    );
+}
 }
