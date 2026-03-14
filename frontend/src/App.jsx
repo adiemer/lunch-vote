@@ -270,7 +270,11 @@ function App() {
                   disabled={!todayChoice || isProcessing}
                   sx={{ minWidth: 260, fontWeight: "bold" }}
                 >
-                  {isProcessing ? <CircularProgress size={24} /> : `🚀 SEND ANNOUNCEMENT ${viewingDate}`}
+                  {isProcessing ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    `🚀 SEND ANNOUNCEMENT (${formatDisplayDate(viewingDate)})`
+                  )}
                 </Button>
               </Box>
             </Paper>
