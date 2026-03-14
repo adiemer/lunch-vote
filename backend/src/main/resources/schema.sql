@@ -4,5 +4,6 @@ DROP TABLE IF EXISTS restaurants;
 CREATE TABLE IF NOT EXISTS restaurants (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    address VARCHAR(255)
+    address VARCHAR(255),
+    label VARCHAR(100)
 );
