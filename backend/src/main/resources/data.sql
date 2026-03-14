@@ -9,3 +9,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- This resets the 'counter' so new restaurants start at ID 3
 SELECT setval(pg_get_serial_sequence('restaurants', 'id'), coalesce(max(id), 1)) FROM restaurants;
+
+INSERT INTO schedules (lunch_date, restaurant_id, label) 
+VALUES ('2026-03-13', 1, 'Team Lunch')
+ON CONFLICT DO NOTHING;
