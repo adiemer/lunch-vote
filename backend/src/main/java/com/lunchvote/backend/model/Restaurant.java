@@ -20,7 +20,7 @@ public class Restaurant {
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "restaurant_address",nullable = true)
+    @Column(name = "address",nullable = true)
     private String address;
 
     @Column(nullable = true)
