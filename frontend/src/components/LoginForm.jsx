@@ -89,7 +89,7 @@ const LoginForm = ({ onLoginSuccess }) => {
                 required
                 fullWidth
                 label="Phone Number"
-                placeholder="555 555 5555"
+                placeholder="5555555555"
                 autoFocus
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, "").slice(0, 10))}
