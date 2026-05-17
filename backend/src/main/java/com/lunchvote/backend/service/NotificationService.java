@@ -44,22 +44,22 @@ public class NotificationService {
     } else {
         System.out.println("✅ Twilio initialized with SID: " + twilioSid);
         Twilio.init(twilioSid, twilioToken);
-        log.info("Twilio initialized for WhatsApp notifications.");
+        log.info("Twilio initialized for text notifications.");
         log.info("Twilio SID: " + twilioSid);
     }
     }
 
-    // --- WHATSAPP / PIN LOGIC ---
+    // --- SMS / PIN LOGIC ---
     public String sendVerificationPin(String toPhone) {
         String pin = String.format("%06d", new Random().nextInt(1000000));
         
         Message.creator(
-            new PhoneNumber("whatsapp:" + toPhone),
-            new PhoneNumber("whatsapp:" + fromNumber),
+            new PhoneNumber(toPhone),
+            new PhoneNumber(fromNumber),
             "Your Lunch Dash login PIN is: " + pin
         ).create();
 
-        log.info("Sent PIN to WhatsApp: {}", toPhone);
+        log.info("Sent PIN to SMS: {}", toPhone);
         return pin; 
     }
 

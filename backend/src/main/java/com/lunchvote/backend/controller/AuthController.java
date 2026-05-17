@@ -39,7 +39,7 @@ public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest reque
     pinStorage.put(request.getPhoneNumber(), sentPin);
     
     // 3. Return a JSON object (Frontend likes this better than a raw String)
-    return ResponseEntity.ok(Map.of("message", "PIN sent to WhatsApp!"));
+    return ResponseEntity.ok(Map.of("message", "PIN sent to SMS!"));
 }
 
 @PostMapping("/verify")
