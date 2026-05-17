@@ -29,7 +29,7 @@ const LoginForm = ({ onLoginSuccess }) => {
 
       if (response.ok) {
         setStep(2);
-        setMessage("Check your WhatsApp!");
+        setMessage("Check your text messages!");
       }
     } catch {
       setMessage("Server error. Is the backend running?");
@@ -98,7 +98,7 @@ const LoginForm = ({ onLoginSuccess }) => {
                 }}
               />
               <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2, py: 1.5 }}>
-                Send WhatsApp PIN
+                Send PIN
               </Button>
             </Box>
           ) : (
