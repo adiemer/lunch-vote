@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "setup:db": "psql -U postgres -c \"CREATE DATABASE lunch_vote_db;\" || echo \"Exists\"",
     "setup:env": "node -e \"const fs = require('fs'); if (!fs.existsSync('.env')) { fs.copyFileSync('.env.template', '.env'); console.log('.env created'); }\"",
-    "setup": "npm run setup:db && npm run setup:env"
+    "setup": "npm run setup:db && npm run setup:env",
+    "start": "vite preview"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
