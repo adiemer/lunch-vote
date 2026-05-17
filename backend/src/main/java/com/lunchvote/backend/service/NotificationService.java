@@ -17,7 +17,7 @@ import java.util.Random;
 @Slf4j
 public class NotificationService {
 
-    @Autowired
+    @Autowired(required = false)
     private JavaMailSender mailSender;
 
     // Twilio Values
@@ -65,34 +65,40 @@ public class NotificationService {
 
     // --- EMAIL BROADCAST LOGIC ---
     public void sendEmailBroadcast(String restaurant, String address, String rawDate, String label) {
-        if (groupListRaw == null || groupListRaw.isEmpty()) {
-            log.error("GROUP_EMAILS environment variable is not set!");
-            return;
-        }
+        // Check if mailSender is available
+    if (mailSender == null) {
+        log.info("Email service disabled, skipping email broadcast for {}", restaurant);
+        return;
+    }
+    
+    if (groupListRaw == null || groupListRaw.isEmpty()) {
+        log.error("GROUP_EMAILS environment variable is not set!");
+        return;
+    }
 
-        String[] recipients = groupListRaw.split(",");
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(recipients);
-        message.setSubject("🍴 Lunch Dash: " + restaurant);
+    String[] recipients = groupListRaw.split(",");
+    SimpleMailMessage message = new SimpleMailMessage();
+    message.setTo(recipients);
+    message.setSubject("🍴 Lunch Dash: " + restaurant);
 
-        StringBuilder body = new StringBuilder();
-        body.append("Lunch Pick: ").append(restaurant).append("\n")
-            .append("When: ").append(rawDate).append("\n")
-            .append("Notes: ").append((label != null) ? label : "").append("\n");
+    StringBuilder body = new StringBuilder();
+    body.append("Lunch Pick: ").append(restaurant).append("\n")
+        .append("When: ").append(rawDate).append("\n")
+        .append("Notes: ").append((label != null) ? label : "").append("\n");
 
-        if (address != null && !address.trim().isEmpty()) {
-            body.append("Location: ").append(address).append("\n");
-            String mapUrl = "https://www.google.com/maps/search/?api=1&query=" + address.replace(" ", "+");
-            body.append("\n📍 Directions: ").append(mapUrl);
-        }
+    if (address != null && !address.trim().isEmpty()) {
+        body.append("Location: ").append(address).append("\n");
+        String mapUrl = "https://www.google.com/maps/search/?api=1&query=" + address.replace(" ", "+");
+        body.append("\n📍 Directions: ").append(mapUrl);
+    }
 
-        message.setText(body.toString());
+    message.setText(body.toString());
 
-        try {
-            mailSender.send(message);
-            log.info("Broadcast sent for {}", restaurant);
-        } catch (Exception e) {
-            log.error("Failed to send email: {}", e.getMessage());
-        }
+    try {
+        mailSender.send(message);
+        log.info("Broadcast sent for {}", restaurant);
+    } catch (Exception e) {
+        log.error("Failed to send email: {}", e.getMessage());
+    }
     }
 }
