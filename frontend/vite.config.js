@@ -6,11 +6,11 @@ export default defineConfig({
   plugins: [react()],
   preview: {
     host: "0.0.0.0",
-    port: 5173,
+    port: 8080,
     allowedHosts: ["lunch-vote.up.railway.app"],
   },
   server: {
     host: "0.0.0.0",
-    port: 5173,
+    port: 8080,
   },
 });
