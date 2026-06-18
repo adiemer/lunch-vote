@@ -1,5 +1,6 @@
 package com.lunchvote.backend.controller;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,9 +17,9 @@ import com.lunchvote.backend.dto.LoginRequest;
 import com.lunchvote.backend.dto.VerifyRequest;
 import com.lunchvote.backend.service.NotificationService;
 
+
 @RestController
 @RequestMapping("/api/auth")
-// ADD THIS LINE:
 @CrossOrigin(origins = "${app.frontend.url}")
 public class AuthController {
 
@@ -28,34 +29,46 @@ public class AuthController {
     private final Map<String, String> pinStorage = new ConcurrentHashMap<>();
 
     @Value("${app.frontend.url}")
-     String frontendUrl;
+    String frontendUrl;
 
-@PostMapping("/login")
-public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
-    // 1. Generate and send PIN
-    String sentPin = notificationService.sendVerificationPin(request.getPhoneNumber());
-    
-    // 2. ACTUALLY SAVE IT: This uses the 'sentPin' variable and clears the warning
-    pinStorage.put(request.getPhoneNumber(), sentPin);
-    
-    // 3. Return a JSON object (Frontend likes this better than a raw String)
-    return ResponseEntity.ok(Map.of("message", "PIN sent to SMS!"));
-}
+    // This grabs the value you just added to application.properties
+    @Value("${app.allowed.phone.numbers:}")
+    private String allowedPhoneNumbers;
 
-@PostMapping("/verify")
-public ResponseEntity<?> verify(@RequestBody VerifyRequest request) {
-    // Trim input to avoid invisible space errors
-    String phone = request.getPhoneNumber().trim();
-    String userPin = request.getPin().trim();
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        String phone = request.getPhoneNumber().trim();
 
-    String savedPin = pinStorage.get(phone);
+        // Security Gatekeeper: Check if the phone number is on your allowed list
+        if (allowedPhoneNumbers == null || allowedPhoneNumbers.isEmpty() || 
+            !Arrays.asList(allowedPhoneNumbers.split(",")).contains(phone)) {
+            
+            // 403 Forbidden stops them immediately and doesn't trigger Twilio
+            return ResponseEntity.status(403).body(Map.of("message", "Access Denied. Unauthorized user."));
+        }
 
-    if (savedPin != null && savedPin.equals(userPin)) {
-        pinStorage.remove(phone);
-        return ResponseEntity.ok(Map.of("message", "Success", "status", "LOGGED_IN"));
-    } else {
-        return ResponseEntity.status(401).body(Map.of("message", "Invalid PIN"));
+        // 1. Generate and send PIN (Only runs if number is allowed!)
+        String sentPin = notificationService.sendVerificationPin(phone);
+        
+        // 2. SAVE IT
+        pinStorage.put(phone, sentPin);
+        
+        // 3. Return JSON
+        return ResponseEntity.ok(Map.of("message", "PIN sent to SMS!"));
     }
-}
-    
+
+    @PostMapping("/verify")
+    public ResponseEntity<?> verify(@RequestBody VerifyRequest request) {
+        String phone = request.getPhoneNumber().trim();
+        String userPin = request.getPin().trim();
+
+        String savedPin = pinStorage.get(phone);
+
+        if (savedPin != null && savedPin.equals(userPin)) {
+            pinStorage.remove(phone);
+            return ResponseEntity.ok(Map.of("message", "Success", "status", "LOGGED_IN"));
+        } else {
+            return ResponseEntity.status(401).body(Map.of("message", "Invalid PIN"));
+        }
+    }
 }
